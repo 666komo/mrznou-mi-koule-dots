@@ -1,0 +1,13 @@
+width=300
+height=30%
+x=50%
+y=50%
+mode=drun
+filter_rate=100
+no_actions=true
+prompt=What an amazing day, huh?
+orientation=vertical
+allow-markup=false
+haling=fill
+content-haling=fill
+use-custom-colors=true

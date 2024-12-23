@@ -1,0 +1,302 @@
+(defwindow bar
+  :monitor 0
+  :geometry (geometry :x "0%"
+                      :y "0%"
+                      :width "100%"
+                      :height "30px"
+                      :anchor "top center")
+  :stacking "fg"
+  :reserve (struts :distance "30px" :side "top")
+  :windowtype "dock"
+  :exclusive true
+  :wm-ignore false
+  (bar))
+(defwidget bar []
+  (box :class "bar"
+       :orientation "h"
+       :space-between true  
+       (left)(center)(right)))
+
+(defwidget left []
+  (box :class "left"
+       :orientation "h"
+       :space-between true
+       :halign "start"
+       (workspaces)(time)))
+
+(defwidget center []
+  (box :class "center"
+       :orientation "h"
+       :halign "center"
+       (network)(brightness)(battery)))
+
+(defwidget right []
+  (box :class "right"
+       :orientation "h"
+       :space-between true
+       :halign "end"
+       (controls)(music)))
+
+(defwidget time []
+  (eventbox
+    :onhover "${EWW_CMD} update time_hover=true"
+    :onhoverlost "${EWW_CMD} update time_hover=false"
+    (box :class "time"
+         :orientation "h"
+         :space-evenly false
+         :halign "start"
+      (label :text {time_hover ? date : time}))))
+
+(defvar time_hover false)
+
+(defpoll time :interval "10s"
+  "date '+%H:%M'")
+
+(defpoll date :interval "10s"
+  "date '+%Y-%m-%d %H:%M:%S'")
+
+(defwidget music []
+  (box :class "music"
+       :orientation "h"
+       :space-evenly false
+       :halign "end"
+    {music != "" ? "󰎆  ${music_truncated}" : "󰎆  Player Offline"}))
+
+(deflisten music :initial ""
+  "playerctl --follow metadata --format '{{ artist }} - {{ title }}' || true")
+
+(defvar music_max_length 30)
+
+(defpoll music_truncated :interval "1s"
+  "playerctl metadata --format '{{ artist }} - {{ title }}' | cut -c1-30 | awk '{print $0 (length($0) > 30 ? \"...\" : \"\")}'")
+
+(defpoll workspace :interval "100ms"
+  "scripts/hyprland_workspaces.sh")
+
+(defwidget workspaces []
+  (box :class "workspaces"
+       :orientation "h"
+       :space-evenly false
+       :halign "center"
+    (for ws in workspace
+      (eventbox 
+        :onclick "hyprctl dispatch workspace ${ws.id}"
+        (box 
+          :class "workspace-button ${ws.class}"
+          (label :text "${ws.icon}${ws.name}"))))))
+
+(defwidget network []
+  (box :class "network"
+       :orientation "h"
+       :space-evenly false
+       :halign "end"
+    (label :text {
+      network_status == "wifi" ? wifi_icon :
+      network_status == "ethernet" ? ethernet_icon :
+      disconnected_icon
+    })))
+
+(defpoll network_status :interval "5s"
+  "sh -c '
+    if ip link show | grep -q \"state UP\"; then
+      if iwconfig 2>/dev/null | grep -q \"ESSID:\"; then
+        echo \"wifi\"
+      else
+        echo \"ethernet\"
+      fi
+    else
+      echo \"disconnected\"
+    fi
+  '"
+)
+
+(defvar wifi_icon "󰖩 ")
+(defvar ethernet_icon "󰈀")
+(defvar disconnected_icon "󰖪")
+
+(defvar wifi_animation_1 "󰤟 ")
+(defvar wifi_animation_2 "󰤢 ")
+(defvar wifi_animation_3 "󰤥 ")
+(defvar wifi_animation_4 "󰤨 ")
+
+(defwidget animated_wifi []
+  (label :text {
+    round(EWW_TIME % 4, 0) == 0 ? wifi_animation_1 :
+    round(EWW_TIME % 4, 0) == 1 ? wifi_animation_2 :
+    round(EWW_TIME % 4, 0) == 2 ? wifi_animation_3 :
+    wifi_animation_4
+  }))
+
+(defwidget brightness []
+  (box :class "brightness"
+       :orientation "h"
+       :space-evenly false
+       :halign "end"
+    (label :text {
+      brightness_level >= 75 ? brightness_high_icon :
+      brightness_level >= 50 ? brightness_medium_icon :
+      brightness_level >= 25 ? brightness_low_icon :
+      brightness_off_icon
+    })))
+
+(defvar brightness_high_icon "󰃠 ")
+(defvar brightness_medium_icon "󰃝 ")
+(defvar brightness_low_icon "󰃛 ")
+(defvar brightness_off_icon "󰃚 ")
+
+(defpoll brightness_level :interval "1s"
+  "brightnessctl -m | awk -F, '{print $4}' | tr -d '%'")
+
+(defwidget battery [] 
+  (box :class "battery"
+       :orientation "h"
+       :space-evenly false
+       :halign "end"
+    (label :text {
+      battery_charging ? 
+        (battery_percent >= 90 ? "󰂅 " :
+         battery_percent >= 80 ? "󰂋 " :
+         battery_percent >= 70 ? "󰂊 " :
+         battery_percent >= 60 ? "󰢞 " :
+         battery_percent >= 50 ? "󰂉 " :
+         battery_percent >= 40 ? "󰢝 " :
+         battery_percent >= 30 ? "󰂈 " :
+         battery_percent >= 20 ? "󰂇 " :
+         battery_percent >= 10 ? "󰂆 " : "󰢜 ") :
+        (battery_percent >= 90 ? "󰁹 " :
+         battery_percent >= 80 ? "󰂂 " :
+         battery_percent >= 70 ? "󰂁 " :
+         battery_percent >= 60 ? "󰂀 " :
+         battery_percent >= 50 ? "󰁿 " :
+         battery_percent >= 40 ? "󰁾 " :
+         battery_percent >= 30 ? "󰁽 " :
+         battery_percent >= 20 ? "󰁼 " :
+         battery_percent >= 10 ? "󰁻 " : "󰁺 ")
+    })))
+
+(defpoll battery_percent :interval "30s"
+  "cat /sys/class/power_supply/BAT0/capacity")
+
+(defpoll battery_charging :interval "30s"
+  "cat /sys/class/power_supply/BAT0/status | grep -q 'Charging' && echo true || echo false")
+
+(defwidget controls []
+  (eventbox :onclick "eww open --toggle control-center"
+    (box :class "controls"
+         :orientation "h"
+         :space-evenly false
+         :halign "end"
+         :spacing 0
+      (label :text "󰇙 " :class "control-icon"))))
+
+(defwidget slider [icon value onchange]
+  (box :class "slider"
+       :orientation "h"
+       :space-evenly false
+    (label :text icon)
+    (scale :min 0
+           :max 100
+           :value value
+           :onchange onchange)))
+
+(defwindow control-center
+  :monitor 0
+  :geometry (geometry :x "0%"
+                      :y "30px"
+                      :width "15%"
+                      :height "5%"
+                      :anchor "top right")
+  :stacking "fg"
+  :windowtype "dock"
+  :visible false
+  :class "control-center"
+  (eventbox
+    :onhoverlost "eww close control-center"
+    (box :orientation "v"
+         :space-evenly false
+         :spacing 5
+      (box :class "top-row"
+           :orientation "h"
+           :space-evenly true
+        (box :class "battery-state"
+             :orientation "h"
+             :space-evenly false
+             :halign "start"
+          (label :text {
+            battery_charging ? 
+              (battery_percent >= 90 ? "󰂅  ${battery_percent}%" :
+               battery_percent >= 80 ? "󰂋  ${battery_percent}%" :
+               battery_percent >= 70 ? "󰂊  ${battery_percent}%" :
+               battery_percent >= 60 ? "󰢞  ${battery_percent}%" :
+               battery_percent >= 50 ? "󰂉  ${battery_percent}%" :
+               battery_percent >= 40 ? "󰢝  ${battery_percent}%" :
+               battery_percent >= 30 ? "󰂈  ${battery_percent}%" :
+               battery_percent >= 20 ? "󰂇  ${battery_percent}%" :
+               battery_percent >= 10 ? "󰂆  ${battery_percent}%" : "󰢜  ${battery_percent}%") :
+              (battery_percent >= 90 ? "󰁹  ${battery_percent}%" :
+               battery_percent >= 80 ? "󰂂  ${battery_percent}%" :
+               battery_percent >= 70 ? "󰂁  ${battery_percent}%" :
+               battery_percent >= 60 ? "󰂀  ${battery_percent}%" :
+               battery_percent >= 50 ? "󰁿  ${battery_percent}%" :
+               battery_percent >= 40 ? "󰁾  ${battery_percent}%" :
+               battery_percent >= 30 ? "󰁽  ${battery_percent}%" :
+               battery_percent >= 20 ? "󰁼  ${battery_percent}%" :
+               battery_percent >= 10 ? "󰁻  ${battery_percent}%" : "󰁺  ${battery_percent}%")
+          }))
+        (box :class "system-actions"
+             :orientation "h"
+             :spacing 15
+             :halign "end"
+          (eventbox :onclick "systemctl poweroff"
+            (label :text "󰐥"))
+          (eventbox :onclick "systemctl reboot"
+            (label :text "󰜉"))
+          (eventbox :onclick "systemctl suspend"
+            (label :text "󰤄"))
+          (eventbox :onclick "loginctl terminate-session $XDG_SESSION_ID"
+            (label :text "󰍃"))))
+      (box :class "sliders"
+           :orientation "v"
+           :space-evenly false
+        (slider :icon "󰃠"
+                :value {brightness_level}
+                :onchange "brightnessctl set {}% && eww update brightness_level={}")
+        (slider :icon "󰕾"
+                :value {volume_level}
+                :onchange "pactl set-sink-volume @DEFAULT_SINK@ {}% && eww update volume_level={}"))
+      (box :class "quick-settings"
+           :orientation "h"
+           :space-evenly true
+           :halign "center"
+        (box :class "left-quick-settings" :orientation "v" :halign "start"
+          (eventbox :class {net_status == "WiFi" || net_status == "Wired" ? "active" : ""}
+                    :onclick "nmcli radio wifi $(nmcli radio wifi | grep -q enabled && echo off || echo on)"
+            (box :orientation "h" :halign "center" :spacing 10
+              (label :class "icon" :text "${net_icon}")
+              (label :class "status" :text "Wi-Fi")))
+          (eventbox :class {bluelight_status == "Enabled" ? "active" : ""}
+                    :onclick "scripts/bluelight.sh"
+            (box :orientation "h" :halign "center" :spacing 10
+              (label :class "icon" :text "${bluelight_icon}")
+              (label :class "status" :text "Blue Light"))))
+        (box :class "right-quick-settings" :orientation "v" :halign "end"
+          (eventbox :class {bt_status == "Connected" || bt_status == "On" ? "active" : ""}
+                    :onclick "bluetoothctl power $(bluetoothctl show | grep -q 'Powered: yes' && echo off || echo on)"
+            (box :orientation "h" :halign "center" :spacing 10
+              (label :class "icon" :text "${bt_icon}")
+              (label :class "status" :text "Bluetooth")))
+          (eventbox :class {dnd_status == "Enabled" ? "active" : ""}
+                    :onclick "dunstctl set-paused toggle"
+            (box :orientation "h" :halign "center" :spacing 10
+              (label :class "icon" :text "${dnd_icon}")
+              (label :class "status" :text "Do Not Disturb"))))))))
+
+(defpoll net_icon :interval "1s" "scripts/netstatus.sh | head -n1")
+(defpoll net_status :interval "1s" "scripts/netstatus.sh | tail -n1")
+(defpoll bt_icon :interval "1s" "scripts/btstatus.sh | head -n1")
+(defpoll bt_status :interval "1s" "scripts/btstatus.sh | tail -n1")
+(defpoll dnd_icon :interval "1s" "scripts/dnd.sh | head -n1")
+(defpoll dnd_status :interval "1s" "scripts/dnd.sh | tail -n1")
+(defpoll bluelight_icon :interval "1s" "scripts/bluelight.sh | head -n1")
+(defpoll bluelight_status :interval "1s" "scripts/bluelight.sh | tail -n1")
+(defvar volume_level 50)

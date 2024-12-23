@@ -1,0 +1,182 @@
+/*===========================================
+ *                GLOBAL STYLES
+ *=========================================*/
+* {
+  font-family: "Iosevka Nerd Font";
+}
+
+/*===========================================
+ *              MAIN BAR STYLING
+ *=========================================*/
+.bar {
+  background-color: #000000;
+}
+
+/*===========================================
+ *         LEFT AND RIGHT POSITIONING
+ *=========================================*/
+.left {
+  margin-left: 0px;
+}
+
+.right {
+  margin-right: 10px;
+}
+
+/*===========================================
+ *              MUSIC WIDGET
+ *=========================================*/
+.music {
+  font-size: 1rem;
+  background-color: rgba(35,35,35,1);
+  border-radius: 12px;
+  padding: 0px 16px 0 8px;
+  margin: 2px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/*===========================================
+ *              TIME WIDGET
+ *=========================================*/
+.time {
+  font-size: 1.1rem;
+  font-family: "SF Pro Text", sans-serif;
+  font-weight: bold;
+  transition: all 0.2s ease;
+  padding: 0px 5px;
+  margin-left: 10px;
+  background-color: rgba(0,0,0,0.85);
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/*===========================================
+ *          SYSTEM STATUS WIDGETS
+ *=========================================*/
+.network,
+.brightness,
+.battery {
+  padding: 0px 5px;
+}
+
+.network {
+  font-size: 1.2rem;
+  color: #aa00ff;
+}
+
+.brightness {
+  font-size: 1.2rem;
+  color: #8800ff;
+}
+
+.battery {
+  font-size: 1.2rem;
+  color: #660099;
+}
+
+/*===========================================
+ *            CONTROL CENTER
+ *=========================================*/
+.control-center {
+  background-color: rgba(0, 0, 0, 0.85);
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 1);
+  margin: 10px;
+}
+
+/*===========================================
+ *           QUICK SETTINGS
+ *=========================================*/
+
+
+/*===========================================
+ *              SLIDER STYLES
+ *=========================================*/
+/* Container for all sliders */
+.sliders {
+  margin: 10px 15px;
+  padding: 5px 0;
+}
+
+/* Individual slider styling */
+.slider {
+  margin-bottom: 16px;
+  padding: 5px 0;
+
+  /* Icon label next to slider */
+  label {
+    font-size: 1.2rem;
+    margin-right: 12px;
+    color: #ffffff;
+  }
+
+  /* Main slider track */
+  scale trough {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 9999px;
+    min-height: 15px;
+    min-width: 300px;
+    margin: 0 5px;
+    transition: all 0.2s ease;
+
+    /* Hover effect on track */
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.15);
+    }
+
+    /* Active slider fill */
+    highlight {
+      background-color: #fff;
+      border-radius: 9999px;
+      transition: all 0.2s ease;
+    }
+
+    highlight:hover {
+      background-color: #bbbbbb;
+    }
+  }
+
+  /* Slider handle */
+  scale slider {
+    background-color: #ffffff;
+    border-radius: 50%;
+    min-height: 16px;
+    min-width: 16px;
+    margin: -5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s ease;
+
+    /* Hover effect on handle */
+    &:hover {
+      background-color: #f0f0f0;
+    }
+
+    /* Active/pressed handle */
+    &:active {
+      background-color: #e0e0e0;
+    }
+  }
+}
+
+/*===========================================
+ *            WORKSPACE STYLES
+ *=========================================*/
+.workspaces {
+  padding: 0 10px;
+  
+  .workspace-button {
+    font-family: "Iosevka Nerd Font";
+    font-size: 14px;
+    border-radius: 4px;
+    margin: 2px;
+    padding: 0 5px;
+
+    &.active,
+    &.occupied,
+    &.empty {
+      background-color: transparent;
+      color: #fff;
+    }
+  }
+}

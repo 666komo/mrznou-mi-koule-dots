@@ -1,0 +1,11 @@
+### Executables automation ###
+
+	exec-once = dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP
+	exec-once = dbus-update-activation-environment --systemd --all
+	exec-once = systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP QT_QPA_PLATFORMTHEM
+	exec-once = $HOME/.config/hypr/scripts/reset.bash
+	exec-once = swayidle -w timeout 120 'hyprlock'
+	exec-once = sleep 2; eww open bar
+	exec-once = spotifyd
+	exec-once = hyprpaper
+	exec-once = /usr/lib/hyprpolkitagent
